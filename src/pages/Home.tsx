@@ -16,7 +16,8 @@ import {
   Search,
   BookmarkPlus,
   ChevronRight,
-  Info
+  Info,
+  RefreshCw
 } from "lucide-react";
 
 // Types
@@ -38,10 +39,18 @@ interface Anime {
   year?: number;
 }
 
+interface WaifuImage {
+  url: string;
+  tags: { name: string }[];
+  dominant_color: string;
+}
+
 export default function Home() {
   const [featuredAnime, setFeaturedAnime] = useState<Anime[]>([]);
   const [topAnime, setTopAnime] = useState<Anime[]>([]);
+  const [waifuImage, setWaifuImage] = useState<WaifuImage | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [heroLoading, setHeroLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -56,16 +65,38 @@ export default function Home() {
   const textOpacity = useTransform(scrollYProgress, [0, 0.25], [1, 0]);
   const textY = useTransform(scrollYProgress, [0, 0.25], [0, -50]);
 
+  // Fetch random anime girl image from waifu.im API
+  const fetchRandomWaifu = async () => {
+    setHeroLoading(true);
+    try {
+      const response = await axios.get("https://api.waifu.im/search", {
+        params: {
+          included_tags: "waifu",
+          // height: ">=2000",
+          many: false,
+          orientation: "LANDSCAPE",
+          width: ">=2000",
+          
+        
+        
+        }
+      });
+      
+      if (response.data.images && response.data.images.length > 0) {
+        setWaifuImage(response.data.images[0]);
+      }
+    } catch (err) {
+      console.error("Failed to fetch waifu image:", err);
+    } finally {
+      setHeroLoading(false);
+    }
+  };
+
   // Fetch featured and top anime from Jikan API
   useEffect(() => {
     async function fetchAnimeData() {
       try {
-        const [featuredRes, topRes] = await Promise.all([
-          axios.get("https://api.jikan.moe/v4/top/anime?limit=5"),
-          axios.get("https://api.jikan.moe/v4/top/anime?filter=bypopularity&limit=12")
-        ]);
-        
-        setFeaturedAnime(featuredRes.data.data);
+        const topRes = await axios.get("https://api.jikan.moe/v4/top/anime?filter=bypopularity&limit=12");
         setTopAnime(topRes.data.data);
       } catch (err) {
         setError("Failed to load anime data.");
@@ -75,6 +106,7 @@ export default function Home() {
     }
     
     fetchAnimeData();
+    fetchRandomWaifu();
   }, []);
 
   // Auto-scroll animation for top trending section
@@ -102,31 +134,41 @@ export default function Home() {
     }
   }, [topAnime, controls]);
 
-  // Get featured anime for hero section
-  const heroAnime = featuredAnime[0];
-
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-gray-100 overflow-x-hidden">
-      {/* Hero Section with Featured Anime */}
+      {/* Hero Section with Random Anime Girl */}
       <div ref={containerRef} className="relative h-screen">
         {/* Hero Background */}
-        {heroAnime && (
+        {waifuImage && (
           <motion.div 
             className="absolute inset-0 z-0" 
             style={{ opacity: backgroundOpacity }}
           >
             <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0f] via-[#0a0a0f]/70 to-[#0a0a0f]/30"></div>
-            <img 
-              src={heroAnime.images.jpg.large_image_url || heroAnime.images.jpg.image_url} 
-              alt="" 
+            <motion.img 
+              src={waifuImage.url} 
+              alt="Random anime girl" 
               className="w-full h-full object-cover object-center scale-110"
+              animate={{ y: [0, -100, 0] }}
+              transition={{
+                duration: 20,
+                ease: "linear",
+                repeat: Infinity,
+              }}
               style={{ 
                 imageRendering: "high-quality", 
-                objectFit: "cover",
                 filter: "contrast(1.05) brightness(0.95)" 
               }}
             />
           </motion.div>
+        )}
+        
+        {heroLoading && (
+          <div className="absolute inset-0 z-0 bg-[#161620] flex items-center justify-center">
+            <div className="animate-spin text-purple-500">
+              <RefreshCw size={48} />
+            </div>
+          </div>
         )}
         
         {/* Hero Content */}
@@ -135,50 +177,38 @@ export default function Home() {
             className="max-w-3xl"
             style={{ opacity: textOpacity, y: textY }}
           >
-            {heroAnime ? (
+            {waifuImage ? (
               <>
                 <Badge variant="outline" className="mb-4 bg-purple-800/30 text-purple-300 border-purple-500/30 backdrop-blur-sm px-3 py-1">
-                  <TrendingUp className="w-3 h-3 mr-1" /> #1 Trending Now
+                  <TrendingUp className="w-3 h-3 mr-1" /> Featured Waifu
                 </Badge>
                 <h1 className="text-5xl md:text-7xl font-bold mb-2 tracking-tight text-white">
-                  {heroAnime.title}
+                  Welcome to AnimeStream
                 </h1>
-                <p className="text-lg text-gray-300 mb-6 line-clamp-2">
-                  {heroAnime.synopsis || "Embark on an extraordinary journey with this top-rated anime series."}
+                <p className="text-lg text-gray-300 mb-6">
+                  Discover the best anime series and movies all in one place.
                 </p>
                 <div className="flex flex-wrap gap-3 mb-8">
-                  <Badge variant="secondary" className="bg-[#161620]/80 text-white backdrop-blur-sm">
-                    <Star className="h-3 w-3 fill-yellow-400 text-yellow-400 mr-1" />
-                    {heroAnime.score || 'N/A'}
-                  </Badge>
-                  {heroAnime.episodes && (
-                    <Badge variant="secondary" className="bg-[#161620]/80 text-white backdrop-blur-sm">
-                      {heroAnime.episodes} Episodes
-                    </Badge>
-                  )}
-                  {heroAnime.genres?.slice(0, 2).map(genre => (
-                    <Badge key={genre.name} variant="secondary" className="bg-[#161620]/80 text-white backdrop-blur-sm">
-                      {genre.name}
+                  {waifuImage.tags.slice(0, 4).map(tag => (
+                    <Badge key={tag.name} variant="secondary" className="bg-[#161620]/80 text-white backdrop-blur-sm">
+                      {tag.name}
                     </Badge>
                   ))}
-                  {heroAnime.year && (
-                    <Badge variant="secondary" className="bg-[#161620]/80 text-white backdrop-blur-sm">
-                      {heroAnime.year}
-                    </Badge>
-                  )}
                 </div>
                 <div className="flex flex-wrap gap-3">
                   <Button asChild className="bg-purple-600 hover:bg-purple-500 rounded-full px-6">
-                    <Link to={`/anime/${heroAnime.mal_id}`}>
+                    <Link to="/search">
                       <PlayCircle className="mr-2 h-5 w-5" />
-                      Watch Now
+                      Start Watching
                     </Link>
                   </Button>
-                  <Button asChild variant="outline" className="border-gray-700 bg-[#161620]/40 text-white hover:bg-[#161620] rounded-full backdrop-blur-sm">
-                    <Link to={`/anime/${heroAnime.mal_id}`}>
-                      <Info className="mr-2 h-5 w-5" />
-                      More Info
-                    </Link>
+                  <Button 
+                    variant="outline" 
+                    className="border-gray-700 bg-[#161620]/40 text-white hover:bg-[#161620] rounded-full backdrop-blur-sm"
+                    onClick={fetchRandomWaifu}
+                  >
+                    <RefreshCw className="mr-2 h-5 w-5" />
+                    New Waifu
                   </Button>
                 </div>
               </>
