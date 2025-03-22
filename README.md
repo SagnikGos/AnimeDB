@@ -1,4 +1,4 @@
-# Anime Recommendation Website
+# Anime Database Website
 
 ## Overview
 This website suggests anime based on user input using AI-powered recommendations. Users can type a full prompt (not just mood), and the website will fetch relevant anime titles using the Gemini API. The details for the suggested anime are then retrieved from the Jikan API and displayed.
