@@ -19,6 +19,7 @@ import {
   Calendar,
   Users
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 // Types
 interface AnimeDetails {
@@ -318,10 +319,10 @@ export default function SuggestAnime() {
                           className="text-purple-400 hover:text-purple-300 p-0 h-auto mt-2 self-start"
                           asChild
                         >
-                          <a href={`/anime/${anime.mal_id}`} >
+                          <Link to={`/anime/${anime.mal_id}`} >
                             More details
                             <ArrowRight className="h-3 w-3 ml-1" />
-                          </a>
+                          </Link>
                         </Button>
                       </CardContent>
                     </Card>
