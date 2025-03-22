@@ -318,7 +318,7 @@ export default function SuggestAnime() {
                           className="text-purple-400 hover:text-purple-300 p-0 h-auto mt-2 self-start"
                           asChild
                         >
-                          <a href={`/anime/${anime.mal_id}`} target="_blank" rel="noopener noreferrer">
+                          <a href={`/anime/${anime.mal_id}`} >
                             More details
                             <ArrowRight className="h-3 w-3 ml-1" />
                           </a>
