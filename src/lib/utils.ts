@@ -28,7 +28,7 @@ export const getAnimeDetails = async (title: string) => {
 
 
 
-import axios from "axios";
+
 
 const PROXY_URL = "https://gemini-proxy.sagnik-gos06.workers.dev";
 

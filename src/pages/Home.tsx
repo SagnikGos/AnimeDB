@@ -153,28 +153,29 @@ export default function Home() {
 
   // Auto-scroll animation for top trending section
   useEffect(() => {
-    if (topAnime.length > 0 && scrollRef.current) {
+  // Wait for everything to render and stabilize
+  const timer = setTimeout(() => {
+    if (scrollRef.current && topAnime.length > 0) {
       const scrollWidth = scrollRef.current.scrollWidth;
       const containerWidth = scrollRef.current.offsetWidth;
       
-      // Only activate auto-scroll if content is wider than container
+      // Only start animation if there's content to scroll
       if (scrollWidth > containerWidth) {
-        const scrollAnimation = async () => {
-          await controls.start({
-            x: -(scrollWidth - containerWidth),
-            transition: { 
-              duration: 30, 
-              ease: "linear",
-              repeat: Infinity,
-              repeatType: "reverse"
-            }
-          });
-        };
-        
-        scrollAnimation();
+        controls.start({
+          x: -(scrollWidth - containerWidth),
+          transition: { 
+            duration: 30, 
+            ease: "linear",
+            repeat: Infinity,
+            repeatType: "reverse"
+          }
+        });
       }
     }
-  }, [topAnime, controls]);
+  }, 500); // Small delay to ensure everything is rendered
+  
+  return () => clearTimeout(timer);
+}, [controls, topAnime]);
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-gray-100 overflow-x-hidden">
@@ -225,7 +226,7 @@ export default function Home() {
                   <TrendingUp className="w-3 h-3 mr-1" /> Featured Waifu
                 </Badge>
                 <h1 className="text-5xl md:text-7xl font-bold mb-2 tracking-tight text-white">
-                  Welcome to AnimeStream
+                  Welcome to AnimeDB
                 </h1>
                 <p className="text-lg text-gray-300 mb-6">
                   Discover the best anime series and movies all in one place.
@@ -241,7 +242,7 @@ export default function Home() {
                   <Button asChild className="bg-purple-600 hover:bg-purple-500 rounded-full px-6">
                     <Link to="/search">
                       <PlayCircle className="mr-2 h-5 w-5" />
-                      Start Watching
+                      Discover Animes
                     </Link>
                   </Button>
                   <Button 
@@ -341,7 +342,7 @@ export default function Home() {
                   <div className="bg-[#0d0d14] p-2 rounded border border-gray-800">
                     <div className="flex items-center mb-2">
                       <div className="w-6 h-6 rounded overflow-hidden mr-2">
-                        <img src="https://api.jikan.moe/v4/anime/1535/pictures" alt="" className="w-full h-full object-cover" />
+                        <img src="https://cdn.myanimelist.net/images/anime/1384/119988t.jpg" alt="Berserk" className="w-full h-full object-cover" />
                       </div>
                       <span className="text-white text-sm">Berserk</span>
                       <Badge className="ml-auto bg-black/60 text-yellow-400 border-none text-xs">
@@ -352,7 +353,7 @@ export default function Home() {
                     
                     <div className="flex items-center mb-2">
                       <div className="w-6 h-6 rounded overflow-hidden mr-2">
-                        <img src="https://api.jikan.moe/v4/anime/43/pictures" alt="" className="w-full h-full object-cover" />
+                        <img src="https://cdn.myanimelist.net/images/anime/10/82594t.jpg" alt="Ghost in the Shell" className="w-full h-full object-cover" />
                       </div>
                       <span className="text-white text-sm">Ghost in the Shell</span>
                       <Badge className="ml-auto bg-black/60 text-yellow-400 border-none text-xs">
@@ -363,7 +364,7 @@ export default function Home() {
                     
                     <div className="flex items-center">
                       <div className="w-6 h-6 rounded overflow-hidden mr-2">
-                        <img src="https://api.jikan.moe/v4/anime/1575/pictures" alt="" className="w-full h-full object-cover" />
+                        <img src="https://cdn.myanimelist.net/images/anime/1314/108941t.jpg" alt="Neon Genesis Evangelion" className="w-full h-full object-cover" />
                       </div>
                       <span className="text-white text-sm">Neon Genesis Evangelion</span>
                       <Badge className="ml-auto bg-black/60 text-yellow-400 border-none text-xs">
@@ -480,7 +481,7 @@ export default function Home() {
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3">
                           <Button size="sm" variant="ghost" className="text-white bg-white/10 backdrop-blur-sm hover:bg-white/20 rounded-full w-full">
                             <PlayCircle className="h-4 w-4 mr-1" />
-                            Watch
+                            Details
                           </Button>
                         </div>
                         <div className="absolute top-2 right-2">
@@ -528,9 +529,9 @@ export default function Home() {
                 </Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="rounded-full border-purple-400 text-white bg-purple-900/30 hover:bg-purple-900/50">
-                <Link to="/watchlist">
+                <Link to="/suggest">
                   <BookmarkPlus className="mr-2 h-5 w-5" />
-                  My Watchlist
+                  Suggest Anime
                 </Link>
               </Button>
             </div>
