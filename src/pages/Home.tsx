@@ -17,7 +17,8 @@ import {
   BookmarkPlus,
   ChevronRight,
   Info,
-  RefreshCw
+  RefreshCw,
+  Sparkles
 } from "lucide-react";
 
 // Types
@@ -27,6 +28,11 @@ interface AnimeImage {
     large_image_url?: string;
   };
 }
+interface Song {
+  title: string;
+  link: string;
+}
+
 
 interface Anime {
   mal_id: number;
@@ -55,6 +61,41 @@ export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const controls = useAnimation();
+
+  const [songs, setSongs] = useState<Song[]>([]);
+  const [currentSong, setCurrentSong] = useState<Song | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    async function fetchSongs() {
+      try {
+        const res = await axios.get("https://api.animethemes.moe/anime/1?include=animethemes.song.entries.videos");
+        const themes = res.data.anime.animethemes.map((theme: any) => {
+          const videoLink = theme.song.entries?.[0]?.videos?.[0]?.link || null;
+          return videoLink ? { title: theme.song.title, link: videoLink } : null;
+        }).filter(Boolean);
+
+        setSongs(themes);
+        if (themes.length > 0) setCurrentSong(themes[0]);
+      } catch (error) {
+        console.error("Error fetching anime themes:", error);
+      }
+    }
+
+    fetchSongs();
+  }, []);
+
+  const togglePlay = () => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play().catch(err => console.error("Autoplay blocked:", err));
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
   
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -108,6 +149,7 @@ export default function Home() {
     fetchAnimeData();
     fetchRandomWaifu();
   }, []);
+  
 
   // Auto-scroll animation for top trending section
   useEffect(() => {
@@ -245,6 +287,100 @@ export default function Home() {
         </div>
       </div>
 
+      <section className="py-20 container mx-auto px-4">
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-900 to-purple-900"
+        >
+          <div className="absolute inset-0 bg-[url('https://svgur.com/i/15kq.svg')] opacity-5"></div>
+          <div className="relative z-10 p-8 md:p-12">
+            <div className="flex flex-col md:flex-row md:items-center">
+              <div className="md:w-3/5 mb-8 md:mb-0 md:pr-8">
+                <Badge variant="outline" className="mb-4 bg-purple-800/30 text-purple-300 border-purple-500/30 backdrop-blur-sm px-3 py-1 inline-flex items-center">
+                  <Sparkles className="w-3 h-3 mr-1" /> AI-Powered Feature
+                </Badge>
+                
+                <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+                  Not sure what to watch next?
+                </h2>
+                
+                <p className="text-lg text-purple-200 mb-6">
+                  Let our AI find your perfect anime match based on your mood, preferences, or interests. No more endless scrolling!
+                </p>
+                
+                <div className="flex flex-wrap gap-3">
+                  <Button asChild className="bg-white text-purple-900 hover:bg-gray-100 rounded-full">
+                    <Link to="/suggest">
+                      <PlayCircle className="mr-2 h-5 w-5" />
+                      Get Personalized Recommendations
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="md:w-2/5">
+                <div className="bg-[#161620]/80 backdrop-blur-md rounded-xl p-5 border border-purple-500/20 shadow-lg">
+                  <div className="flex items-center mb-3">
+                    <div className="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
+                    <div className="w-3 h-3 rounded-full bg-yellow-500 mr-2"></div>
+                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                    <div className="ml-auto text-xs text-gray-400">AI Recommendations</div>
+                  </div>
+                  
+                  <p className="font-mono text-sm text-gray-300 mb-2">
+                    &gt; Describe what you want to watch:
+                  </p>
+                  
+                  <p className="font-mono text-sm text-purple-300 mb-3">
+                    "A dark fantasy with philosophical themes and complex characters"
+                  </p>
+                  
+                  <div className="bg-[#0d0d14] p-2 rounded border border-gray-800">
+                    <div className="flex items-center mb-2">
+                      <div className="w-6 h-6 rounded overflow-hidden mr-2">
+                        <img src="https://api.jikan.moe/v4/anime/1535/pictures" alt="" className="w-full h-full object-cover" />
+                      </div>
+                      <span className="text-white text-sm">Berserk</span>
+                      <Badge className="ml-auto bg-black/60 text-yellow-400 border-none text-xs">
+                        <Star className="h-3 w-3 fill-yellow-400 text-yellow-400 mr-1" />
+                        9.1
+                      </Badge>
+                    </div>
+                    
+                    <div className="flex items-center mb-2">
+                      <div className="w-6 h-6 rounded overflow-hidden mr-2">
+                        <img src="https://api.jikan.moe/v4/anime/43/pictures" alt="" className="w-full h-full object-cover" />
+                      </div>
+                      <span className="text-white text-sm">Ghost in the Shell</span>
+                      <Badge className="ml-auto bg-black/60 text-yellow-400 border-none text-xs">
+                        <Star className="h-3 w-3 fill-yellow-400 text-yellow-400 mr-1" />
+                        8.7
+                      </Badge>
+                    </div>
+                    
+                    <div className="flex items-center">
+                      <div className="w-6 h-6 rounded overflow-hidden mr-2">
+                        <img src="https://api.jikan.moe/v4/anime/1575/pictures" alt="" className="w-full h-full object-cover" />
+                      </div>
+                      <span className="text-white text-sm">Neon Genesis Evangelion</span>
+                      <Badge className="ml-auto bg-black/60 text-yellow-400 border-none text-xs">
+                        <Star className="h-3 w-3 fill-yellow-400 text-yellow-400 mr-1" />
+                        8.5
+                      </Badge>
+                    </div>
+                  </div>
+                  
+                  <p className="font-mono text-xs text-gray-400 mt-3 text-center">Try it yourself →</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </section>
+
       {/* Top Trending Section */}
       <section className="py-20 container mx-auto px-4">
         <div className="flex justify-between items-center mb-10">
@@ -370,6 +506,8 @@ export default function Home() {
           </div>
         )}
       </section>
+
+      
       
       {/* Bottom CTA */}
       <section className="pb-24 container mx-auto px-4">
@@ -399,6 +537,17 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+
+
+      
+      
+      
+
+
+
     </div>
+      
+    
   );
 }

@@ -3,6 +3,7 @@ import Home from "./pages/Home.jsx";
 import Search from "./pages/Search.jsx";
 import AnimeDetails from "./pages/AnimeDetails.jsx";
 import Navbar from "./components/Navbar.jsx";
+import SuggestAnime from "./pages/SuggestAnime";
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/search" element={<Search />} />
         <Route path="/anime/:id" element={<AnimeDetails />} />
+        <Route path="/suggest" element={<SuggestAnime/>} />
       </Routes>
     </div>
   );

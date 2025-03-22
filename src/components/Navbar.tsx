@@ -65,7 +65,7 @@ export default function Navbar() {
   const navLinks = [
     { name: "Home", path: "/", icon: <Home className="w-4 h-4" /> },
     { name: "Explore", path: "/explore", icon: <TrendingUp className="w-4 h-4" /> },
-    { name: "Watchlist", path: "/watchlist", icon: <BookmarkPlus className="w-4 h-4" /> },
+    { name: "Watchlist", path: "/suggest", icon: <BookmarkPlus className="w-4 h-4" /> },
   ];
 
   return (
