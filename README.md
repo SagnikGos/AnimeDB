@@ -52,5 +52,5 @@ This website suggests anime based on user input using AI-powered recommendations
 Feel free to submit issues, feature requests, or pull requests.
 
 ## License
-MIT License © 2025 [Your Name]
+MIT License © 2025 Sagnik Goswami
 
